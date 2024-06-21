@@ -8,24 +8,180 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            background: linear-gradient(to right, #f4f4f4, #e0e0e0);
             padding: 20px;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        h1 {
+        h1,
+        h2 {
             text-align: center;
             color: #333;
+        }
+
+        #control-panel,
+        #game-area,
+        #player-actions {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .player-list,
+        .game-area,
+        .results,
+        .player-actions {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+
+        .button-group {
+            display: grid;
+            gap: 10px;
+            grid-template-columns: 1fr 1fr;
+            justify-content: center;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .dropdown {
+            display: inline-block;
+            position: relative;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 200px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            padding: 10px 0;
+            z-index: 1;
+        }
+
+        .dropdown-content button {
+            background-color: #fff;
+            color: #333;
+            padding: 12px 16px;
+            border: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .dropdown-content button:hover {
+            background-color: #f1f1f1;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .player-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .player-actions button {
+            width: 200px;
+        }
+
+        #timer {
+            font-size: 24px;
+            color: red;
         }
     </style>
 </head>
 
 <body>
     <h1>Juego de la Frase Interminable</h1>
-    <h1>Grupo 3</h1>
-    <h1>Nixon Hurtado</h1>
-    <h1>Jaim Mariño</h1>
-    <h1>Alejandro Falcon</h1>
-    <h1>Adrian Romero</h1>
+    <h2>Grupo 3</h2>
+    <div id="control-panel">
+        <div class="dropdown">
+            <button class="dropbtn">Jugadores</button>
+            <div class="dropdown-content">
+                <button onclick="mostrarFormulario('registrar')">Agregar Jugador</button>
+                <button onclick="mostrarFormulario('modificar')">Modificar Jugador</button>
+                <button onclick="mostrarFormulario('eliminar')">Eliminar Jugador</button>
+            </div>
+        </div>
+        <div class="button-group">
+            <button onclick="menuJuego.mostrarJugadores()">Mostrar Jugadores</button>
+            <button onclick="menuJuego.iniciarJuego()">Iniciar Juego</button>
+        </div>
+    </div>
+    <div class="player-list hidden" id="player-list"></div>
+    <div class="player-actions hidden" id="player-actions">
+        <div id="registrar" class="hidden">
+            <h3>Registrar Jugador</h3>
+            <input type="text" id="nombre-registrar" placeholder="Nombre del jugador">
+            <input type="text" id="tecla-aceptacion-registrar" placeholder="Tecla de aceptación (ej. A)">
+            <input type="text" id="tecla-rechazo-registrar" placeholder="Tecla de rechazo (ej. R)">
+            <button onclick="menuJuego.registrarJugador()">Registrar</button>
+        </div>
+        <div id="modificar" class="hidden">
+            <h3>Modificar Jugador</h3>
+            <input type="text" id="nombre-modificar" placeholder="Nombre del jugador a modificar">
+            <input type="text" id="nuevo-nombre-modificar" placeholder="Nuevo nombre del jugador">
+            <input type="text" id="nueva-tecla-aceptacion-modificar" placeholder="Nueva tecla de aceptación (ej. A)">
+            <input type="text" id="nueva-tecla-rechazo-modificar" placeholder="Nueva tecla de rechazo (ej. R)">
+            <button onclick="menuJuego.modificarJugador()">Modificar</button>
+        </div>
+        <div id="eliminar" class="hidden">
+            <h3>Eliminar Jugador</h3>
+            <input type="text" id="nombre-eliminar" placeholder="Nombre del jugador a eliminar">
+            <button onclick="menuJuego.eliminarJugador()">Eliminar</button>
+        </div>
+    </div>
+    <div class="game-area hidden" id="game-area">
+        <p id="turn-info"></p>
+        <p id="current-phrase"></p>
+        <input type="text" id="input-phrase" placeholder="Ingrese la frase">
+        <button id="submit-phrase">Enviar</button>
+        <div id="evaluation-area" class="hidden">
+            <p id="evaluation-info"></p>
+            <input type="text" id="evaluation-input" placeholder="Ingrese A o R">
+            <button id="evaluation-submit">Enviar Calificación</button>
+        </div>
+    </div>
+    <div id="timer" class="hidden">10</div>
+    <div class="results hidden" id="results">
+        <p id="final-results"></p>
+    </div>
     <script>
         class Jugador {
             constructor(nombre, teclaAceptacion, teclaRechazo) {
@@ -54,11 +210,12 @@
                 this.jugadores = [];
                 this.jugadoresSobrantes = [];
                 this.frase = [];
+                this.turnoJugadorIndex = 0;
+                this.timer = null;
             }
 
             agregarJugador(jugador) {
                 this.jugadores.push(jugador);
-                return true;
             }
 
             elegirOrden() {
@@ -69,84 +226,44 @@
                 this.jugadoresSobrantes = [...this.jugadores];
             }
 
-            imprimirJugadores() {
-                let mensaje = this.jugadores.map((jugador, index) => `${index + 1}. ${jugador.toString()}`).join('\n');
-                alert(mensaje);
+            mostrarJugadores() {
+                let mensaje = this.jugadores.map((jugador, index) => `${index + 1}. ${jugador.toString()}`).join('<br>');
+                document.getElementById('player-list').innerHTML = mensaje;
+                document.getElementById('player-list').classList.remove('hidden');
             }
 
             iniciarJuego() {
                 this.frase = [];
-                let eliminados = [];
+                this.eliminados = [];
                 alert("El juego ha comenzado!");
                 this.elegirOrden();
-                let mensaje = "Orden de los jugadores:\n" + this.jugadores.map((jugador, index) => `${index + 1}. ${jugador.toString()}`).join('\n');
-                alert(mensaje);
+                menuJuego.mostrarOrdenJugadores();
+                this.siguienteTurno();
+            }
 
-                while (this.jugadoresSobrantes.length > 1) {
-                    for (let i = 0; i < this.jugadoresSobrantes.length; i++) {
-                        let jugador = this.jugadoresSobrantes[i];
-                        alert(`Es el turno de ${jugador.nombre}`);
-                        alert(`Frase actual: ${this.frase.join(" ")}`);
-
-                        let startTime = Date.now();
-                        let input = prompt("Ingrese la frase:");
-                        let endTime = Date.now();
-
-                        let timeTaken = (endTime - startTime) / 1000.0;
-                        jugador.sumarTiempo(timeTaken);
-
-                        let palabras = input.split(" ");
-                        let error = this.comprobarError(palabras, i);
-
-                        for (let j = 0; j < this.jugadoresSobrantes.length; j++) {
-                            if (j !== i) {
-                                let calificador = this.jugadoresSobrantes[j];
-                                let decision;
-                                do {
-                                    decision = prompt(`${calificador.nombre} está calificando la frase de ${jugador.nombre}\nTecla de aceptación: ${calificador.teclaAceptacion}, Tecla de rechazo: ${calificador.teclaRechazo}\n¿La frase es correcta? (${calificador.teclaAceptacion}/${calificador.teclaRechazo}): `);
-                                    if (decision !== calificador.teclaAceptacion && decision !== calificador.teclaRechazo) {
-                                        alert("Entrada inválida. Por favor, ingrese solo la tecla de aceptación o rechazo.");
-                                    }
-                                } while (decision !== calificador.teclaAceptacion && decision !== calificador.teclaRechazo);
-                                let calificacion = decision === calificador.teclaAceptacion;
-                                this.calificar(j, error, calificacion);
-                            }
+            comprobarError(frase, jugador) {
+                if ((frase.length) - this.frase.length > 1) {
+                    return true;
+                } else if ((frase.length) < this.frase.length) {
+                    return true;
+                } else if ((frase.length) === this.frase.length) {
+                    return true;
+                } else {
+                    if (this.frase.length === 0) {
+                        let ultimaPalabra = frase[frase.length - 1];
+                        this.frase.push(ultimaPalabra);
+                        this.jugadoresSobrantes[jugador].puntuar(1);
+                        return false;
+                    } else {
+                        let ultimaPalabra = frase[frase.length - 1];
+                        if (this.frase[this.frase.length - 1].slice(-1).toLowerCase() !== ultimaPalabra.slice(0, 1).toLowerCase()) {
+                            return true;
                         }
-
-                        if (error) {
-                            alert(`La frase fue rechazada. ${jugador.nombre} ha sido eliminado.`);
-                            eliminados.push(this.jugadoresSobrantes.splice(i, 1)[0]);
-                            i--;
-                        } else {
-                            alert("La frase fue aceptada.");
-                        }
-
-                        let sb = "Puntajes y tiempos actuales:\n";
-                        this.jugadoresSobrantes.sort((j1, j2) => j2.puntuacion - j1.puntuacion);
-                        for (let j of this.jugadoresSobrantes) {
-                            sb += `${j.nombre} - Puntaje: ${j.puntuacion}, Tiempo: ${j.tiempo}\n`;
-                        }
-                        alert(sb);
+                        this.frase.push(ultimaPalabra);
+                        this.jugadoresSobrantes[jugador].puntuar(1);
+                        return false;
                     }
-
-                    this.eliminarJugadorConMenorPuntaje();
                 }
-
-                alert("El juego ha terminado!");
-                let sb = "Resultados finales:\n";
-                eliminados.push(...this.jugadoresSobrantes);
-                eliminados.sort((j1, j2) => j2.puntuacion - j1.puntuacion);
-                for (let j of eliminados) {
-                    sb += `${j.nombre} - Puntaje: ${j.puntuacion}, Tiempo: ${j.tiempo}\n`;
-                }
-                alert(sb);
-
-                if (eliminados.length > 0) {
-                    let ganador = eliminados[0];
-                    alert(`El ganador es: ${ganador.nombre} con un puntaje de ${ganador.puntuacion}`);
-                }
-
-                this.menuPrincipal();
             }
 
             eliminarJugadorConMenorPuntaje() {
@@ -164,219 +281,240 @@
             calificar(i, error, calificacion) {
                 if (error) {
                     if (calificacion) {
-                        this.jugadoresSobrantes[i].puntuar(-0.5);
+                        this.jugadoresSobrantes[i].puntuar(-1);
                     } else {
-                        this.jugadoresSobrantes[i].puntuar(0.5);
+                        this.jugadoresSobrantes[i].puntuar(1);
                     }
                 } else {
                     if (calificacion) {
-                        this.jugadoresSobrantes[i].puntuar(0.5);
+                        this.jugadoresSobrantes[i].puntuar(1);
                     } else {
-                        this.jugadoresSobrantes[i].puntuar(-0.5);
+                        this.jugadoresSobrantes[i].puntuar(-1);
                     }
                 }
             }
 
-            comprobarError(frase, jugador) {
-                if ((frase.length) - this.frase.length > 1) {
-                    return true;
-                } else if ((frase.length) < this.frase.length) {
-                    return true;
-                } else if ((frase.length) === this.frase.length) {
-                    return true;
-                } else {
-                    if (this.frase.length === 0) {
-                        let ultimaPalabra = frase[frase.length - 1];
-                        this.frase.push(ultimaPalabra);
-                        this.jugadoresSobrantes[jugador].puntuar(1);
-                        return false;
-                    } else {
-                        let equivocaciones = 0;
-                        for (let i = 0; i < this.frase.length; i++) {
-                            if (frase[i].toLowerCase() !== this.frase[i].toLowerCase()) {
-                                equivocaciones++;
-                            }
-                        }
-                        if (equivocaciones > 0) {
-                            return true;
-                        } else {
-                            this.frase.push(frase[frase.length - 1]);
-                            this.jugadoresSobrantes[jugador].puntuar(1);
-                            return false;
-                        }
+            iniciarTimer() {
+                let timeLeft = 10;
+                document.getElementById('timer').innerText = timeLeft;
+                document.getElementById('timer').classList.remove('hidden');
+
+                this.timer = setInterval(() => {
+                    timeLeft--;
+                    document.getElementById('timer').innerText = timeLeft;
+                    if (timeLeft <= 0) {
+                        this.finalizarTurno(true);  // Se acaba el tiempo
                     }
+                }, 1000);
+            }
+
+            finalizarTurno(timeout = false) {
+                clearInterval(this.timer);
+                document.getElementById('timer').classList.add('hidden');
+
+                if (timeout) {
+                    alert("Tiempo agotado!");
+                    this.jugadoresSobrantes[this.turnoJugadorIndex].puntuar(-1);  // Resta 1 punto si se le acaba el tiempo
+                    this.jugadoresSobrantes.splice(this.turnoJugadorIndex, 1);  // Elimina al jugador
                 }
+
+                if (this.jugadoresSobrantes.length <= 1) {
+                    this.finalizarJuego();
+                } else {
+                    this.turnoJugadorIndex = (this.turnoJugadorIndex + 1) % this.jugadoresSobrantes.length;
+                    this.siguienteTurno();
+                }
+            }
+
+            finalizarJuego() {
+                alert("El juego ha terminado!");
+                let sb = "Resultados finales:\n";
+                this.eliminados.push(...this.jugadoresSobrantes);
+                this.eliminados.sort((j1, j2) => j2.puntuacion - j1.puntuacion);
+                for (let j of this.eliminados) {
+                    sb += `${j.nombre} - Puntaje: ${j.puntuacion}\n`;
+                }
+                document.getElementById('final-results').innerText = sb;
+                document.getElementById('results').classList.remove('hidden');
+
+                if (this.eliminados.length > 0) {
+                    let ganador = this.eliminados[0];
+                    alert(`El ganador es: ${ganador.nombre} con un puntaje de ${ganador.puntuacion}`);
+                }
+            }
+
+            siguienteTurno() {
+                if (this.jugadoresSobrantes.length <= 1) {
+                    this.finalizarJuego();
+                    return;
+                }
+
+                let jugador = this.jugadoresSobrantes[this.turnoJugadorIndex];
+                document.getElementById('turn-info').innerText = `Es el turno de ${jugador.nombre}`;
+                document.getElementById('current-phrase').innerText = `Frase actual: ${this.frase.join(" ")}`;
+                document.getElementById('game-area').classList.remove('hidden');
+                this.iniciarTimer();
             }
         }
 
         class MenuJuego {
             constructor(juego) {
                 this.juego = juego;
+                this.evaluacionPendiente = null;
             }
 
             registrarJugador() {
-                let nombre = prompt("Nombre del jugador:");
-                while (!nombre || nombre.trim() === "") {
-                    alert("El nombre no puede estar vacío. Inténtelo de nuevo.");
-                    nombre = prompt("Nombre del jugador:");
+                let nombre = document.getElementById('nombre-registrar').value;
+                let teclaAceptacion = document.getElementById('tecla-aceptacion-registrar').value.toLowerCase();
+                let teclaRechazo = document.getElementById('tecla-rechazo-registrar').value.toLowerCase();
+
+                // Verificar que las teclas de aceptación y rechazo no se repitan
+                if (this.juego.jugadores.some(j => j.teclaAceptacion.toLowerCase() === teclaAceptacion || j.teclaRechazo.toLowerCase() === teclaRechazo)) {
+                    alert("Las teclas de aceptación o rechazo ya están en uso. Elija otras teclas.");
+                    return;
                 }
 
-                let teclaA = prompt("Tecla de aceptación (ej. A):");
-                while (!teclaA || teclaA.trim() === "") {
-                    alert("La tecla de aceptación no puede estar vacía. Inténtelo de nuevo.");
-                    teclaA = prompt("Tecla de aceptación:");
+                let jugadorExistente = this.juego.jugadores.find(j => j.nombre.toLowerCase() === nombre.toLowerCase());
+                if (jugadorExistente) {
+                    alert("Ya existe un jugador con ese nombre");
+                    return;
                 }
 
-                let teclaR = prompt("Tecla de rechazo (ej. R):");
-                while (!teclaR || teclaR.trim() === "") {
-                    alert("La tecla de rechazo no puede estar vacía. Inténtelo de nuevo.");
-                    teclaR = prompt("Tecla de rechazo:");
-                }
-
-                if (this.juego.agregarJugador(new Jugador(nombre, teclaA, teclaR))) {
+                if (nombre && teclaAceptacion && teclaRechazo) {
+                    this.juego.agregarJugador(new Jugador(nombre, teclaAceptacion, teclaRechazo));
                     alert("Jugador registrado con éxito!!");
+                    document.getElementById('nombre-registrar').value = '';
+                    document.getElementById('tecla-aceptacion-registrar').value = '';
+                    document.getElementById('tecla-rechazo-registrar').value = '';
                 } else {
                     alert("No se pudo registrar el jugador");
                 }
             }
 
-            editarJugador(op) {
-                if (op < this.juego.jugadores.length && op >= 0) {
-                    let nombre = prompt("Nombre del jugador:");
-                    while (!nombre || nombre.trim() === "") {
-                        alert("El nombre no puede estar vacío. Inténtelo de nuevo.");
-                        nombre = prompt("Nombre del jugador:");
-                    }
-
-                    let teclaA = prompt("Tecla de aceptación:");
-                    while (!teclaA || teclaA.trim() === "") {
-                        alert("La tecla de aceptación no puede estar vacía. Inténtelo de nuevo.");
-                        teclaA = prompt("Tecla de aceptación:");
-                    }
-
-                    let teclaR = prompt("Tecla de rechazo:");
-                    while (!teclaR || teclaR.trim() === "") {
-                        alert("La tecla de rechazo no puede estar vacía. Inténtelo de nuevo.");
-                        teclaR = prompt("Tecla de rechazo:");
-                    }
-
-                    this.juego.jugadores[op].nombre = nombre;
-                    this.juego.jugadores[op].teclaAceptacion = teclaA;
-                    this.juego.jugadores[op].teclaRechazo = teclaR;
-                    alert("Jugador actualizado con éxito!!");
-                    this.juego.imprimirJugadores();
-                } else {
-                    alert("No se puede editar jugador fuera de rango");
-                }
+            mostrarJugadores() {
+                this.juego.mostrarJugadores();
             }
 
-            eliminarJugador(op) {
-                if (op < this.juego.jugadores.length && op >= 0) {
-                    this.juego.jugadores.splice(op, 1);
-                    alert("Jugador eliminado con éxito!!");
-                } else {
-                    alert("No se puede eliminar jugador fuera de rango");
-                }
+            ocultarFormularios() {
+                document.querySelectorAll('.player-actions > div').forEach(div => div.classList.add('hidden'));
+                document.getElementById('player-actions').classList.add('hidden');
             }
 
-            menuPrincipal() {
-                let opcion = 0;
-                do {
-                    let input = prompt(
-                        "**************************************************\n" +
-                        "JUEGO DE LA FRASE INTERMINABLE\n" +
-                        "**************************************************\n" +
-                        "1.- Jugadores\n" +
-                        "2.- Iniciar nuevo juego\n" +
-                        "3.- Salir\n" +
-                        "Por favor, seleccione una opción (1-3):"
-                    );
-                    opcion = parseInt(input);
-                    switch (opcion) {
-                        case 1:
-                            this.menuRegistro();
-                            break;
-                        case 2:
-                            this.verificarJugadores();
-                            break;
-                        case 3:
-                            alert("Hasta pronto!!");
-                            break;
-                        default:
-                            alert("Opción no válida. Por favor, seleccione una opción (1-3).");
-                            break;
-                    }
-                } while (opcion !== 3);
-            }
-
-            verificarJugadores() {
+            iniciarJuego() {
                 if (this.juego.jugadores.length > 1) {
+                    this.ocultarFormularios();
+                    document.getElementById('control-panel').classList.add('hidden');
+                    document.getElementById('player-list').classList.add('hidden');
+                    document.getElementById('game-area').classList.remove('hidden');
                     this.juego.iniciarJuego();
                 } else {
                     alert("No hay suficiente cantidad de jugadores para comenzar el juego");
                 }
             }
 
-            menuRegistro() {
-                let opcion = 0;
-                do {
-                    let input = prompt(
-                        "*******************************************\n" +
-                        "MENU REGISTRO JUGADORES\n" +
-                        "*******************************************\n" +
-                        "1.- Registrar jugador\n" +
-                        "2.- Jugadores registrados\n" +
-                        "3.- Editar jugador\n" +
-                        "4.- Eliminar jugador\n" +
-                        "5.- Salir\n" +
-                        "Por favor, seleccione una opción (1-5):"
-                    );
-                    opcion = parseInt(input);
-                    switch (opcion) {
-                        case 1:
-                            this.registrarJugador();
-                            break;
-                        case 2:
-                            if (this.juego.jugadores.length === 0) {
-                                alert("No hay jugadores registrados.");
-                            } else {
-                                this.juego.imprimirJugadores();
-                            }
-                            break;
-                        case 3:
-                            if (this.juego.jugadores.length === 0) {
-                                alert("No hay jugadores registrados.");
-                            } else {
-                                this.juego.imprimirJugadores();
-                                input = prompt(`Seleccione jugador a editar (1-${this.juego.jugadores.length}):`);
-                                let op = parseInt(input);
-                                this.editarJugador(op - 1);
-                            }
-                            break;
-                        case 4:
-                            if (this.juego.jugadores.length === 0) {
-                                alert("No hay jugadores registrados.");
-                            } else {
-                                this.juego.imprimirJugadores();
-                                input = prompt(`Seleccione jugador a eliminar (1-${this.juego.jugadores.length}):`);
-                                let op = parseInt(input);
-                                this.eliminarJugador(op - 1);
-                            }
-                            break;
-                        case 5:
-                            return;
-                        default:
-                            alert("Opción no válida. Por favor, seleccione una opción (1-5).");
-                            break;
+            mostrarOrdenJugadores() {
+                let mensaje = `Orden de los jugadores:\n ${this.juego.jugadores.map((jugador, index) => `${index + 1}. ${jugador.toString()}`).join('\n')}`;
+                alert(mensaje);
+            }
+
+            enviarFrase() {
+                let phraseInput = document.getElementById('input-phrase').value.trim();
+                let jugador = this.juego.jugadoresSobrantes[this.juego.turnoJugadorIndex];
+
+                if (phraseInput) {
+                    let frase = phraseInput.split(" ");
+                    let error = this.juego.comprobarError(frase, this.juego.turnoJugadorIndex);
+
+                    if (error) {
+                        this.evaluacionPendiente = { jugador, frase };
+                        let siguienteJugadorIndex = (this.juego.turnoJugadorIndex + 1) % this.juego.jugadoresSobrantes.length;
+                        let siguienteJugador = this.juego.jugadoresSobrantes[siguienteJugadorIndex];
+                        document.getElementById('evaluation-info').innerText = `El jugador ${jugador.nombre} cometió un error. Jugador ${siguienteJugador.nombre}, ¿Aceptar (tecla: ${siguienteJugador.teclaAceptacion.toUpperCase()}) o Rechazar (tecla: ${siguienteJugador.teclaRechazo.toUpperCase()})?`;
+                        document.getElementById('evaluation-area').classList.remove('hidden');
+                        clearInterval(this.juego.timer); // Pausar el tiempo durante la evaluación
+                    } else {
+                        this.juego.finalizarTurno();
                     }
-                } while (opcion !== 5);
+                } else {
+                    alert("Debe ingresar una frase");
+                }
+                document.getElementById('input-phrase').value = '';
+            }
+
+            evaluarFrase(calificacion) {
+                if (this.evaluacionPendiente) {
+                    let { jugador, frase } = this.evaluacionPendiente;
+                    let siguienteJugador = this.juego.jugadoresSobrantes[(this.juego.turnoJugadorIndex + 1) % this.juego.jugadoresSobrantes.length];
+                    if (calificacion === siguienteJugador.teclaAceptacion.toUpperCase() || calificacion === siguienteJugador.teclaRechazo.toUpperCase()) {
+                        let error = this.juego.comprobarError(frase, this.juego.turnoJugadorIndex);
+                        this.juego.calificar(this.juego.turnoJugadorIndex, error, calificacion === siguienteJugador.teclaAceptacion.toUpperCase());
+                        this.evaluacionPendiente = null;
+                        document.getElementById('evaluation-area').classList.add('hidden');
+                        this.juego.finalizarTurno();
+                    } else {
+                        alert(`Debe ingresar '${siguienteJugador.teclaAceptacion.toUpperCase()}' para aceptar o '${siguienteJugador.teclaRechazo.toUpperCase()}' para rechazar`);
+                    }
+                }
+            }
+
+            modificarJugador() {
+                let nombre = document.getElementById('nombre-modificar').value;
+                let nuevoNombre = document.getElementById('nuevo-nombre-modificar').value;
+                let nuevaTeclaAceptacion = document.getElementById('nueva-tecla-aceptacion-modificar').value.toLowerCase();
+                let nuevaTeclaRechazo = document.getElementById('nueva-tecla-rechazo-modificar').value.toLowerCase();
+
+                let jugador = this.juego.jugadores.find(j => j.nombre.toLowerCase() === nombre.toLowerCase());
+
+                if (jugador) {
+                    if (nuevoNombre) jugador.nombre = nuevoNombre;
+                    if (nuevaTeclaAceptacion) jugador.teclaAceptacion = nuevaTeclaAceptacion;
+                    if (nuevaTeclaRechazo) jugador.teclaRechazo = nuevaTeclaRechazo;
+
+                    alert("Jugador modificado con éxito!!");
+                    document.getElementById('nombre-modificar').value = '';
+                    document.getElementById('nuevo-nombre-modificar').value = '';
+                    document.getElementById('nueva-tecla-aceptacion-modificar').value = '';
+                    document.getElementById('nueva-tecla-rechazo-modificar').value = '';
+                } else {
+                    alert("No se encontró el jugador");
+                }
+            }
+
+            eliminarJugador() {
+                let nombre = document.getElementById('nombre-eliminar').value;
+                let index = this.juego.jugadores.findIndex(j => j.nombre.toLowerCase() === nombre.toLowerCase());
+
+                if (index !== -1) {
+                    this.juego.jugadores.splice(index, 1);
+                    alert("Jugador eliminado con éxito!!");
+                    document.getElementById('nombre-eliminar').value = '';
+                } else {
+                    alert("No se encontró el jugador");
+                }
             }
         }
 
-        document.addEventListener("DOMContentLoaded", () => {
-            const juego = new Juego();
-            const menu = new MenuJuego(juego);
-            menu.menuPrincipal();
+        // Función para mostrar el formulario correcto
+        function mostrarFormulario(formulario) {
+            document.querySelectorAll('.player-actions > div').forEach(div => div.classList.add('hidden'));
+            document.getElementById(formulario).classList.remove('hidden');
+            document.getElementById('player-actions').classList.remove('hidden');
+        }
+
+        const juego = new Juego();
+        const menuJuego = new MenuJuego(juego);
+
+        // Agregar eventos a los botones
+        document.getElementById('submit-phrase').addEventListener('click', () => menuJuego.enviarFrase());
+        document.getElementById('evaluation-submit').addEventListener('click', () => {
+            const calificacion = document.getElementById('evaluation-input').value.trim().toUpperCase();
+            const siguienteJugador = juego.jugadoresSobrantes[(juego.turnoJugadorIndex + 1) % juego.jugadoresSobrantes.length];
+            if (calificacion === siguienteJugador.teclaAceptacion.toUpperCase() || calificacion === siguienteJugador.teclaRechazo.toUpperCase()) {
+                menuJuego.evaluarFrase(calificacion);
+            } else {
+                alert(`Debe ingresar '${siguienteJugador.teclaAceptacion.toUpperCase()}' para aceptar o '${siguienteJugador.teclaRechazo.toUpperCase()}' para rechazar`);
+            }
+            document.getElementById('evaluation-input').value = '';
         });
     </script>
 </body>
